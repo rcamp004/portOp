@@ -7,15 +7,18 @@ A Markowitz based Portfolio Optimzer
 """
 
 
-
+from numpy import array, zeros, matrix, ones, shape, linspace, hstack
 from pandas_datareader import data as web
 from pandas.io.data import get_data_yahoo
+from pandas import Series, DataFrame
 from cvxopt import blas, solvers
 import matplotlib.pyplot as plt
-import matplotlib
+from numpy.linalg import inv
 import cvxopt as opt
 import pandas as pd
 import numpy as np
+import pylab as pl
+import matplotlib
 import datetime
 
 np.random.seed(123)
@@ -64,12 +67,13 @@ class portfolio(object):
             mu = weights*expectedReturn.T
             return mu
         
-    def covariance(self,data):
+    def cov(self,data):
         tol = 1e-4 #Set the tolerance for covariances small enough to be set to zero.
         'Input a data frame of daily returns and output covariance matrix'
         covarianceMatrix = data.cov()
         covarianceMatrix[np.abs(covarianceMatrix) < tol] = 0           
         return covarianceMatrix
+
     
     def correlation(self,data):
         tol = 1e-4 #Set the tolerance for covariances small enough to be set to zero.
@@ -95,7 +99,6 @@ class portfolio(object):
         stockData.plot(subplots = True, legend = True,figsize = (8, 8));        
         plt.show()
         
-    
 
 #print individual stock returns
 myport = portfolio(stocks,start,end)
@@ -112,11 +115,11 @@ print myport.start
 print myport.end
 print myport.getData()
 print myport.returns(stockData)
-print myport.covariance(returnsData)
-covariance = myport.covariance(returnsData)
+print myport.cov(returnsData)
+covariance = myport.cov(returnsData)
 cor = myport.correlation(covariance)
 mu = myport.average(returnsData,[0.1]*10)
 print cor 
 print mu
 myport.graphStock(stockData[['AAPL','TSLA','GLD']])
-
+myport.efficient_frontier_plot()
