@@ -102,13 +102,9 @@ myport = portfolio(stocks,start,end)
 stockData = myport.getData()
 returnsData = myport.returns(stockData)
 indret = myport.individual_returns(returnsData)
+print returnsData
+print indret
 print myport.max_ind_ret(indret)
-#er_i = {stock:my_port.average(returnsData[stock],1) for stock in returnsData}
-#Largest single return from stock list: 
-#largest_return_stock = max(er_i, key = er_i.get) #get Key
-#er_i.get(largest_return_stock) #print value
-
-#Plot a single stock
 
 #Test Function Calls            
 print myport.stocks
@@ -122,4 +118,5 @@ cor = myport.correlation(covariance)
 mu = myport.average(returnsData,[0.1]*10)
 print cor 
 print mu
+myport.graphStock(stockData[['AAPL','TSLA','GLD']])
 
