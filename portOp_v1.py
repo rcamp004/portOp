@@ -9,6 +9,7 @@ A Markowitz based Portfolio Optimzer
 
 
 from pandas_datareader import data as web
+from pandas.io.data import get_data_yahoo
 from cvxopt import blas, solvers
 import matplotlib.pyplot as plt
 import matplotlib
@@ -53,13 +54,16 @@ class portfolio(object):
         k = np.random.rand(n)
         return k / sum(k)
         
-    def average(self,data, weights):
+    def average(self,data, weights = 1):
         'Input a data frame of daily returns and output expected returns for each stock'
-        expectedReturn = data.apply(np.mean)
-        expectedReturn = np.asmatrix(expectedReturn)
-        mu = weights*expectedReturn.T
-        return mu
-    
+        if isinstance(data,pd.Series):  #Check if data is a vector.
+            return np.average(data)
+        else:
+            expectedReturn = data.apply(np.mean)
+            expectedReturn = np.asmatrix(expectedReturn)
+            mu = weights*expectedReturn.T
+            return mu
+        
     def covariance(self,data):
         tol = 1e-4 #Set the tolerance for covariances small enough to be set to zero.
         'Input a data frame of daily returns and output covariance matrix'
@@ -73,21 +77,49 @@ class portfolio(object):
         cor[np.abs(cor) < tol] = 0           
         return cor
         
-    def risk(covarmat,weights):
+    def risk(self,covarmat,weights):
             sigma = np.sqrt(weights * covarmat * weights.T)
             return sigma
+
+    def individual_returns(self,returns):
+        expected_individual_return = {stock:myport.average(returns[stock],1) for stock in returns} #myport needs to be more general and not Global!!!
+        return expected_individual_return
         
-my_port = portfolio(stocks,start,end)
-print my_port.stocks
-print my_port.start
-print my_port.end
-print my_port.getData()
-returnsData = my_port.getData()
-print my_port.returns(returnsData)
-print my_port.covariance(returnsData)
-covariance = my_port.covariance(returnsData)
-cor = my_port.correlation(covariance)
-mu = my_port.average(returnsData,[0.1]*10)
+    def max_ind_ret(self,ind_ret_dict):
+        #Largest single return from stock list: 
+        largest_return_stock = max(ind_ret_dict, key = ind_ret_dict.get) #get Key
+        max_val = ind_ret_dict.get(largest_return_stock) #print value
+        return(largest_return_stock,max_val)
+        
+    def graphStock(self,stockData):
+        stockData.plot(subplots = True, legend = True,figsize = (8, 8));        
+        plt.show()
+        
+    
+
+#print individual stock returns
+myport = portfolio(stocks,start,end)
+stockData = myport.getData()
+returnsData = myport.returns(stockData)
+indret = myport.individual_returns(returnsData)
+print myport.max_ind_ret(indret)
+#er_i = {stock:my_port.average(returnsData[stock],1) for stock in returnsData}
+#Largest single return from stock list: 
+#largest_return_stock = max(er_i, key = er_i.get) #get Key
+#er_i.get(largest_return_stock) #print value
+
+#Plot a single stock
+
+#Test Function Calls            
+print myport.stocks
+print myport.start
+print myport.end
+print myport.getData()
+print myport.returns(stockData)
+print myport.covariance(returnsData)
+covariance = myport.covariance(returnsData)
+cor = myport.correlation(covariance)
+mu = myport.average(returnsData,[0.1]*10)
 print cor 
 print mu
 
