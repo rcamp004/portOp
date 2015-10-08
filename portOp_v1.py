@@ -11,15 +11,16 @@ from numpy import array, zeros, matrix, ones, shape, linspace, hstack
 from pandas_datareader import data as web
 from pandas.io.data import get_data_yahoo
 from pandas import Series, DataFrame
-from cvxopt import blas, solvers
+#from cvxopt import blas, solvers
 import matplotlib.pyplot as plt
 from numpy.linalg import inv
-import cvxopt as opt
+#import cvxopt as opt
 import pandas as pd
 import numpy as np
 import pylab as pl
 import matplotlib
 import datetime
+import sys
 
 np.random.seed(123)
 
@@ -99,6 +100,44 @@ class portfolio(object):
         stockData.plot(subplots = True, legend = True,figsize = (8, 8));        
         plt.show()
         
+    def presentValue(cashflow, inrate):
+        k = len(cashflow)
+        pv = 0
+        if isinstance(inrate,list):
+            if len(inrate) != len(cashflow):
+                print "Interest rate array needs to be same length as cashflow array"            
+            else:
+                for payout in range(k):
+                    pv = pv + cashflow[payout] / ((1+inrate[payout])**payout)
+                    print pv
+                return pv    
+        elif isinstance(inrate,float):
+            for payout in range(k):                
+                pv = pv + cashflow[payout] / ((1+inrate)**payout)
+                print pv
+            return pv    
+
+    def futureValue(cashflow,inrate):
+        k = len(cashflow)
+        fv = 0
+        if isinstance(inrate,list):
+           if len(inrate) != len(cashflow):
+               print "Interest rate array needs to be same length as cashflow array"            
+           else:
+               for payout in range(k):
+                   fv = fv + cashflow[payout]*(1+inrate[payout])**(k-payout-1)
+               return fv
+        elif isinstance(inrate,float):
+            for payout in range(k):
+                fv = fv + cashflow[payout]*(1+inrate)**(k-payout-1)
+#                print "%s to the %s power" % (payout,k-payout)
+#                print fv
+            return fv    
+        
+    def pvPerpetuity(val,inrate):
+        return val/inrate
+
+
 
 #print individual stock returns
 myport = portfolio(stocks,start,end)
@@ -122,4 +161,4 @@ mu = myport.average(returnsData,[0.1]*10)
 print cor 
 print mu
 myport.graphStock(stockData[['AAPL','TSLA','GLD']])
-myport.efficient_frontier_plot()
+#myport.efficient_frontier_plot()
